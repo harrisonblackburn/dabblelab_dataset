@@ -1,5 +1,5 @@
 const { ApolloServer, gql } = require('apollo-server');
-const graphql, {GraphQLObjectType, GraphQLSchema, GraphQLInt, GraphQLString} = require('graphql');
+const graphql, {GraphQLObjectType, GraphQLSchema, GraphQLInt, GraphQLString, GraphQLList} = require('graphql');
 const {graphHTTP} = require('express-graphql');
 
 // A schema is a collection of type definitions (hence "typeDefs")
@@ -10,8 +10,8 @@ const typeDefs = gql`
 
   # This "Albania" type defines the queryable fields for every year in our data source.
   type Albania {
-    year: String
-    population: String
+    year: Integer
+    population: Integer 
   }
 
   # The "Query" type is special: it lists all of the available queries that
@@ -41,9 +41,58 @@ const albania = [
     
   ];
 
-  const RootQuery = "query"; 
+  const CountryType = new GraphQLObjectType({
+      name: "Albania", 
+      fields: () => ({
+        year: { type: GraphQLString}, 
+        totalArea : { type: GraphQLInt}, 
+        population : { type: GraphQLInt}, 
 
-  const Mutation = "mutation";
+      })
+  })
+
+  const RootQuery = new GraphQlObjectType({
+      name: "RootQueryType", 
+      fields: {
+          getAllYears: {
+              type: new GraphQLList(CountryType), 
+              args: { year: { type: GraphQLString}}, 
+              resolve(parent, args) {
+                  return db.collection.findAll
+              }
+          }, 
+          getPopByYear: {
+              type: new GraphQLList(CountryType), 
+              args: { year: { type: GraphQLString}}, 
+              resolve(parent, args) {
+                  return db.collection.find
+              }
+            }
+         
+       
+      }
+  }); 
+
+  const Mutation = new GraphQLObjectType({
+      name: "Mutation", 
+      fields: {
+          createYear: {
+              type: YearType, 
+              args: {
+                year: { type: GraphQLString}, 
+                totalArea : { type: GraphQLInt}, 
+                population : { type: GraphQLInt},  
+              }, 
+              resolve(parent, args) {
+                  db.albania.insertOne({
+                      year: "2004", 
+                      totalArea: 28748, 
+                      population: 3211162
+                  })
+              }
+          }
+      }
+  });
 
   const schema = new GraphQLSchema({query: RootQuery, mutation: Mutation })
 

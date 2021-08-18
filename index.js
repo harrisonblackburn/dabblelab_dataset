@@ -1,4 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server');
+const graphql, {GraphQLObjectType, GraphQLSchema, GraphQLInt, GraphQLString} = require('graphql');
+const {graphHTTP} = require('express-graphql');
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -39,6 +41,12 @@ const albania = [
     
   ];
 
+  const RootQuery = "query"; 
+
+  const Mutation = "mutation";
+
+  const schema = new GraphQLSchema({query: RootQuery, mutation: Mutation })
+
   // Resolvers define the technique for fetching the types defined in the
 // schema. 
 const resolvers = {
@@ -55,3 +63,8 @@ const server = new ApolloServer({ typeDefs, resolvers });
 server.listen().then(({ url }) => {
   console.log(`🚀  Server ready at ${url}`);
 });
+
+app.use('/graphql', graphqlHTTP({
+    schema, 
+    graphql: true
+}))
